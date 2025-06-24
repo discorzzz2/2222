@@ -12,7 +12,7 @@ local TweenService = game:GetService("TweenService")
 -- ========================================================
 
 pcall(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/discorzzz2/22w2/refs/heads/main/2sw2w"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/discorzzz2/22w2/refs/heads/main/22ws2"))()
 end)
 
 -- ========================================================
